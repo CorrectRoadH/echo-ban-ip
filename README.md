@@ -1,7 +1,7 @@
 # What is echo-ban-ip? 
 
-`echo-ban-ip` is a very easy to use echo middleware that to ban ip address that request too many. to prevent simple script attack.
-`echo-ban-ip` 是一个非常容易使用的echo中间件，用于禁止请求过多的ip地址。以防止简单的脚本攻击。
+`echo-ban-ip` is a out of the box echo middleware that to ban ip address that request too many. to prevent simple script attack.
+`echo-ban-ip` 是一个开箱即用的echo中间件，用于禁止请求过多的ip地址。以防止简单的脚本攻击。
 
 # What is the difference between this and Rate Limiter?
 
