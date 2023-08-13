@@ -1,12 +1,12 @@
 # What is echo-ban-ip? 
 
 `echo-ban-ip` is a very easy to use echo middleware that to ban ip address that request too many. to prevent simple script attack.
-
+`echo-ban-ip` 是一个非常容易使用的echo中间件，用于禁止请求过多的ip地址。以防止简单的脚本攻击。
 
 # What is the difference between this and Rate Limiter?
 
-The middleware is consistent of the most function of rate limiter. The most difference is that can ban ip address that request too many for punish.
-
+The middleware is consistent of the most function of [Rate Limiter](https://echo.labstack.com/docs/middleware/rate-limiter). The most difference is that can ban ip address that request too many for punish.
+该中间件与[Rate Limiter](https://echo.labstack.com/docs/middleware/rate-limiter)的大部分功能一致。最大的区别是可以禁止请求过多的ip地址一个额外时长以进行惩罚。
 # Usage
 
 **Basic**
@@ -38,6 +38,7 @@ func main() {
 ```
 
 **AllowList and DenyList**
+```go
 package main
 
 import (
