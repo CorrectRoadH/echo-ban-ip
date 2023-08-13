@@ -31,7 +31,7 @@ func TestIsIPBannedAllowList(t *testing.T) {
 		LimitTime:         time.Second * 1,
 		LimitRequestCount: 2,
 		BanTime:           time.Second * 5,
-		AllowIPList:       []string{"127.0.0.1"},
+		AllowList:         []string{"127.0.0.1"},
 	}
 	result := middleware.IsIPBanned("127.0.0.1", config)
 	assert.Equal(t, false, result)
@@ -48,7 +48,7 @@ func TestIsIPBannedDenyList(t *testing.T) {
 		LimitTime:         time.Second * 1,
 		LimitRequestCount: 2,
 		BanTime:           time.Second * 5,
-		DenyIPList:        []string{"127.0.0.1"},
+		DenyList:          []string{"127.0.0.1"},
 	}
 	result := middleware.IsIPBanned("127.0.0.1", config)
 	assert.Equal(t, true, result)

@@ -1,11 +1,11 @@
 package banip
 
 import (
-	"net/http"
 	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type IPRecord struct {
@@ -17,12 +17,16 @@ type IPRecord struct {
 }
 
 type FilterConfig struct {
+	Skipper             middleware.Skipper
+	ErrorHandler        func(context echo.Context, err error) error
+	DenyHandler         func(context echo.Context, identifier string, err error) error
+	IdentifierExtractor middleware.Extractor
+
 	LimitRequestCount int
 	LimitTime         time.Duration // second
 	BanTime           time.Duration // second
-	AllowIPList       []string
-	DenyIPList        []string
-	DenyPrompt        string
+	AllowList         []string
+	DenyList          []string
 }
 
 func getIPFromRealIP(ip string) string {
@@ -32,9 +36,9 @@ func getIPFromRealIP(ip string) string {
 var RecordMap map[string]IPRecord = make(map[string]IPRecord)
 
 func IsIPBanned(IP string, config FilterConfig) bool {
-	if len(config.AllowIPList) > 0 {
+	if len(config.AllowList) > 0 {
 		// if allow ip list is not empty, check if the ip is in the list
-		for _, allowIP := range config.AllowIPList {
+		for _, allowIP := range config.AllowList {
 			if allowIP == IP {
 				return false
 			}
@@ -42,8 +46,8 @@ func IsIPBanned(IP string, config FilterConfig) bool {
 	}
 
 	// if deny ip list is not empty, check if the ip is in the list
-	if len(config.DenyIPList) > 0 {
-		for _, denyIP := range config.DenyIPList {
+	if len(config.DenyList) > 0 {
+		for _, denyIP := range config.DenyList {
 			if denyIP == IP {
 				return true
 			}
@@ -117,18 +121,34 @@ func IsIPBanned(IP string, config FilterConfig) bool {
 	}
 }
 func FilterRequestConfig(config FilterConfig) echo.MiddlewareFunc {
-	if config.DenyPrompt == "" {
-		config.DenyPrompt = "Your IP is banned cause of too many requests in a short time."
+	if config.Skipper == nil {
+		config.Skipper = middleware.DefaultSkipper
+	}
+
+	if config.ErrorHandler == nil {
+		config.ErrorHandler = middleware.DefaultRateLimiterConfig.ErrorHandler
+	}
+
+	if config.DenyHandler == nil {
+		config.DenyHandler = middleware.DefaultRateLimiterConfig.DenyHandler
+	}
+
+	if config.IdentifierExtractor == nil {
+		config.IdentifierExtractor = middleware.DefaultRateLimiterConfig.IdentifierExtractor
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// get the ip address
-			IP := getIPFromRealIP(c.RealIP())
+
+			identifier, err := config.IdentifierExtractor(c)
+			if err != nil {
+				c.Error(config.ErrorHandler(c, err))
+			}
 
 			// check if the ip is banned
-			if IsIPBanned(IP, config) {
-				return c.String(http.StatusForbidden, config.DenyPrompt)
+			if IsIPBanned(identifier, config) {
+				c.Error(config.DenyHandler(c, identifier, err))
+				return nil
 			}
 
 			return next(c)
