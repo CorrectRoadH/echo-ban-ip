@@ -141,6 +141,7 @@ func FilterRequestConfig(config FilterConfig) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 
 			identifier, err := config.IdentifierExtractor(c)
+
 			if err != nil {
 				c.Error(config.ErrorHandler(c, err))
 			}
